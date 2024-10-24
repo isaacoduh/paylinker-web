@@ -21,6 +21,8 @@ import {
   CardTitle
 } from '@/components/ui/card'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 export default function CreatePaymentLink() {
   const [amount, setAmount] = useState('')
@@ -29,13 +31,44 @@ export default function CreatePaymentLink() {
   const [expirationDate, setExpirationDate] = useState('')
   const [previewUrl, setPreviewUrl] = useState('')
   const [generatedUrl, setGeneratedUrl] = useState('')
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     // Here you would typically call your backend API to create the payment link
     // For this example, we'll just generate a mock URL
-    const mockUrl = `https://pay.example.com/${Math.random().toString(36).substring(7)}`
-    setGeneratedUrl(mockUrl)
+    const payload = {
+      amount,
+      currency,
+      description,
+      expiration_date: expirationDate
+    }
+    const token = localStorage.getItem('token')
+
+    try {
+      const response = await axios.post(
+        'http://127.0.0.1:8000/payment-links',
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+      setGeneratedUrl(response.data.link_url)
+    } catch (error: any) {
+      if (error.response && error.response.status === 401) {
+        // Redirect to login if 401 Unauthorized
+        router.push('/login')
+      } else {
+        console.error('Error creating payment link:', error)
+      }
+    }
+
+    // const mockUrl = `https://pay.example.com/${Math.random().toString(36).substring(7)}`
+    // setGeneratedUrl(mockUrl)
   }
 
   const handlePreview = () => {

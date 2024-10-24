@@ -1,7 +1,7 @@
 'use client'
-
 import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -11,22 +11,69 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
+import { Loader2 } from 'lucide-react'
 
 export default function PaymentPage() {
-  const searchParams = useSearchParams()
+  const router = useRouter()
+  const params = useParams()
+  const { link_code } = params // Extract the link code from URL
+
   const [amount, setAmount] = useState('')
   const [currency, setCurrency] = useState('')
   const [description, setDescription] = useState('')
+  const [linkId, setLinkId] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    setAmount(searchParams.get('amount') || '')
-    setCurrency(searchParams.get('currency') || '')
-    setDescription(searchParams.get('description') || '')
-  }, [searchParams])
+    const fetchPaymentLink = async () => {
+      try {
+        const response = await axios.get(
+          `http://127.0.0.1:8000/payment-links/${link_code}` // Fetch link details using the link code
+        )
+        const { id, amount, currency, description } = response.data
 
-  const handlePayment = () => {
-    // Here you would typically integrate with a payment processor
-    alert('Payment processed successfully!')
+        setLinkId(id) // Store the link ID for later use
+        setAmount(amount)
+        setCurrency(currency)
+        setDescription(description)
+        setIsLoading(false)
+      } catch (error: any) {
+        if (error.response && error.response.status === 404) {
+          setError('Payment link not found.')
+        } else {
+          setError('An error occurred while fetching the payment details.')
+        }
+        setIsLoading(false)
+      }
+    }
+
+    if (link_code) {
+      fetchPaymentLink()
+    }
+  }, [link_code])
+
+  const handlePayment = async () => {
+    try {
+      const response = await axios.post(
+        `http://127.0.0.1:8000/api/payments/create-transaction/${linkId}`
+      ) // Use the link ID to create a transaction
+      window.location.href = response.data.url // Redirect to Stripe Checkout
+    } catch (error: any) {
+      if (error.response && error.response.status === 404) {
+        setError('Payment link not found.')
+      } else {
+        setError('An error occurred while initiating the payment.')
+      }
+    }
+  }
+
+  if (isLoading) {
+    return <Loader2 />
+  }
+
+  if (error) {
+    return <div>{error}</div>
   }
 
   return (

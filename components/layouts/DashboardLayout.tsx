@@ -42,6 +42,14 @@ export default function DashboardLayout({
             <span>Dashboard</span>
           </Link>
           <Link
+            href='/payment-links'
+            className={`flex items-center space-x-2 ${activeTab === 'payment-links' ? 'text-purple-200' : 'hover:text-purple-200'}`}
+            onClick={() => setActiveTab('payment-links')}
+          >
+            <LinkIcon className='h-5 w-5' />
+            <span>Payment Links</span>
+          </Link>
+          <Link
             href='/create-payment-link'
             className={`flex items-center space-x-2 ${activeTab === 'create-payment-link' ? 'text-purple-200' : 'hover:text-purple-200'}`}
             onClick={() => setActiveTab('create-payment-link')}

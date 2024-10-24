@@ -25,7 +25,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import DashboardLayout from '../dashboard/page'
+import DashboardLayout from '@/components/layouts/DashboardLayout'
 
 // Mock data for payments
 const mockPayments = [
