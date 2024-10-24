@@ -28,18 +28,12 @@ export default function PaymentSuccess() {
       if (!sessionId) return
 
       try {
-        // Make a request to your backend to fetch Stripe secret key
-        // const response = await axios.get('/api/get-stripe-secret-key') // Ensure this endpoint returns the secret key
-        //   const stripeSecretKey = response.data.secretKey
-        const stripeSecretKey =
-          'sk_test_51PY6hmL0mfmIj3HsbICsI85uBR28wrWRopTe9NGY7D38gmqMLt24x7lE8Ap4Z3oDy6cEGPfpkxdghARiT1g3sPx600wzDygAz7'
-
         // Now make the request to Stripe API to get the session details
         const stripeResponse = await axios.get(
           `https://api.stripe.com/v1/checkout/sessions/${sessionId}`,
           {
             headers: {
-              Authorization: `Bearer ${stripeSecretKey}`
+              Authorization: `Bearer ${process.env.STRIPE_KEY}`
             }
           }
         )
