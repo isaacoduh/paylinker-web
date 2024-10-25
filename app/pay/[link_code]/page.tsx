@@ -29,7 +29,7 @@ export default function PaymentPage() {
     const fetchPaymentLink = async () => {
       try {
         const response = await axios.get(
-          `http://127.0.0.1:8000/payment-links/${link_code}` // Fetch link details using the link code
+          `${process.env.NEXT_PUBLIC_API_URL}/payment-links/${link_code}` // Fetch link details using the link code
         )
         const { id, amount, currency, description } = response.data
 
@@ -56,7 +56,7 @@ export default function PaymentPage() {
   const handlePayment = async () => {
     try {
       const response = await axios.post(
-        `http://127.0.0.1:8000/api/payments/create-transaction/${linkId}`
+        `${process.env.NEXT_PUBLIC_API_URL}/payments/create-transaction/${linkId}`
       ) // Use the link ID to create a transaction
       window.location.href = response.data.url // Redirect to Stripe Checkout
     } catch (error: any) {

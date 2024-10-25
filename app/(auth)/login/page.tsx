@@ -28,7 +28,7 @@ export default function LoginPage() {
     // For this example, we'll just redirect to the dashboard
     try {
       const response = await axios.post(
-        'http://127.0.0.1:8000/auth/login-json',
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/login-json`,
         {
           email,
           password

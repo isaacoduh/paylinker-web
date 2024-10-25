@@ -48,7 +48,7 @@ export default function CreatePaymentLink() {
 
     try {
       const response = await axios.post(
-        'http://127.0.0.1:8000/payment-links',
+        `${process.env.NEXT_PUBLIC_API_URL}/payment-links`,
         payload,
         {
           headers: {

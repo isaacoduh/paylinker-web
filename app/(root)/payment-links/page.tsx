@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Copy, AlertCircle, Pencil, Trash2 } from 'lucide-react'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
+import { useRouter } from 'next/navigation'
 
 interface PaymentLink {
   id: string
@@ -29,13 +30,14 @@ export default function PaymentLinksList() {
   const [paymentLinks, setPaymentLinks] = useState<PaymentLink[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     const fetchPaymentLinks = async () => {
       try {
         const token = localStorage.getItem('token')
         const response = await axios.get(
-          'http://127.0.0.1:8000/payment-links',
+          `${process.env.NEXT_PUBLIC_API_URL}/payment-links`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -45,8 +47,13 @@ export default function PaymentLinksList() {
         )
         setPaymentLinks(response.data)
         setError(null)
-      } catch (error) {
-        setError('Failed to fetch payment links. Please try again.')
+      } catch (error: any) {
+        if (error.response && error.response.status === 401) {
+          localStorage.removeItem('token')
+          router.push('/login') // Redirect to login page
+        } else {
+          setError('Failed to fetch payment links. Please try again.')
+        }
       } finally {
         setIsLoading(false)
       }

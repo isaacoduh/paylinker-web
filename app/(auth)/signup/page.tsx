@@ -25,7 +25,7 @@ export default function Signup() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await axios.post('http://127.0.0.1:8000/auth', {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/auth`, {
         email,
         password
       })

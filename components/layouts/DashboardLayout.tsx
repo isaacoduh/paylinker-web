@@ -22,7 +22,6 @@ export default function DashboardLayout({
   }, [router])
 
   const handleLogout = () => {
-    // Here you would typically handle the logout logic
     localStorage.removeItem('token')
     router.push('/login')
   }
