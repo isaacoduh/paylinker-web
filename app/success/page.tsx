@@ -20,6 +20,7 @@ export default function PaymentSuccess() {
 
   const [transactionId, setTransactionId] = useState('')
   const [amountPaid, setAmountPaid] = useState('')
+  const [currency, setCurrency] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -33,15 +34,16 @@ export default function PaymentSuccess() {
           `https://api.stripe.com/v1/checkout/sessions/${sessionId}`,
           {
             headers: {
-              Authorization: `Bearer ${process.env.STRIPE_KEY}`
+              Authorization: `Bearer ${process.env.NEXT_PUBLIC_STRIPE_KEY}`
             }
           }
         )
 
-        const { id, amount_total } = stripeResponse.data
+        const { id, amount_total, currency } = stripeResponse.data
 
         setTransactionId(id)
         setAmountPaid((amount_total / 100).toFixed(2)) // Stripe returns amount in cents
+        setCurrency(currency)
         setLoading(false)
       } catch (error) {
         console.error(error)
@@ -79,11 +81,16 @@ export default function PaymentSuccess() {
         <CardContent className='space-y-4'>
           <div className='text-center'>
             <p className='font-semibold'>Transaction ID:</p>
-            <p className='text-gray-600'>{transactionId}</p>
+            <p className='w-120 overflow-clip text-sm text-gray-600'>
+              {transactionId}
+            </p>
           </div>
           <div className='text-center'>
             <p className='font-semibold'>Amount Paid:</p>
-            <p className='text-gray-600'>${amountPaid}</p>
+            <p className='text-gray-600'>
+              {amountPaid} {''}
+              {currency.toUpperCase()}
+            </p>
           </div>
         </CardContent>
         <CardFooter className='flex flex-col space-y-2'>
