@@ -24,8 +24,6 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically handle the login logic
-    // For this example, we'll just redirect to the dashboard
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_API_URL}/auth/login-json`,
@@ -35,6 +33,7 @@ export default function LoginPage() {
         }
       )
       localStorage.setItem('token', response.data.access_token)
+      localStorage.setItem('user_id', response.data.user_id)
       router.push('/dashboard')
     } catch (error) {
       console.error('Login failed!', error)

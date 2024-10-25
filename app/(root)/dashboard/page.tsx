@@ -44,7 +44,7 @@ export default function AnalyticsDashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    const userId = 2
+    const userId = localStorage.getItem('user_id')
     const token = localStorage.getItem('token')
     async function fetchDashboardData() {
       try {
