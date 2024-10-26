@@ -94,9 +94,9 @@ export default function PaymentSuccess() {
           </div>
         </CardContent>
         <CardFooter className='flex flex-col space-y-2'>
-          <Button asChild className='w-full'>
+          {/* <Button asChild className='w-full'>
             <Link href='/dashboard'>Go to Dashboard</Link>
-          </Button>
+          </Button> */}
           <Button asChild variant='outline' className='w-full'>
             <Link href='/support'>Need Help?</Link>
           </Button>
