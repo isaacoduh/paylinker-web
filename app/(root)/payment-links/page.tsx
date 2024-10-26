@@ -115,7 +115,10 @@ export default function PaymentLinksList() {
           <Card>
             <CardContent className='py-6 text-center'>
               <p className='text-lg text-gray-600'>No payment links found.</p>
-              <Button className='mt-4 bg-purple-600 text-white hover:bg-purple-700'>
+              <Button
+                className='mt-4 bg-purple-600 text-white hover:bg-purple-700'
+                onClick={() => router.push('/create-payment-link')}
+              >
                 Create Your First Payment Link
               </Button>
             </CardContent>
