@@ -69,7 +69,7 @@ export default function TransactionsDashboard() {
         params: {
           date: dateFilter || undefined,
           currency: currencyFilter || undefined,
-          status: statusFilter || undefined,
+          transaction_status: statusFilter || undefined,
           page: currentPage,
           per_page: 10
         },
