@@ -31,11 +31,13 @@ import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import TransactionChart from '@/components/transaction-chart'
 import PerformanceCharts from '@/components/performance-charts'
+import LatestPayments from '@/components/latest-payments'
 
 export default function AnalyticsDashboard() {
   const [dashboardData, setDashboardData] = useState({
     total_earnings: {} as any,
     transactions: [],
+    latest_transactions: [],
     performance: []
   })
   const [activeTab, setActiveTab] = useState('transactions')
@@ -93,6 +95,7 @@ export default function AnalyticsDashboard() {
 
   const total_earnings = dashboardData.total_earnings
   const transactions = dashboardData.transactions
+  const latest_transactions = dashboardData.latest_transactions
   const performance = dashboardData.performance
 
   if (loading) {
@@ -161,6 +164,9 @@ export default function AnalyticsDashboard() {
             <TabsList>
               <TabsTrigger value='transactions'>Transactions</TabsTrigger>
               <TabsTrigger value='performance'>Performance</TabsTrigger>
+              <TabsTrigger value='latest_transactions'>
+                Latest Payments
+              </TabsTrigger>
             </TabsList>
             <TabsContent value='transactions'>
               <TransactionChart transactions={transactions} />
@@ -168,6 +174,9 @@ export default function AnalyticsDashboard() {
             </TabsContent>
             <TabsContent value='performance' className='mt-6'>
               <PerformanceCharts performance={performance} />
+            </TabsContent>
+            <TabsContent value='latest_transactions'>
+              <LatestPayments transactions={latest_transactions} />
             </TabsContent>
           </Tabs>
         </div>
