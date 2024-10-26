@@ -75,22 +75,27 @@ export default function AnalyticsDashboard() {
     }
     fetchDashboardData()
 
-    if (userId) {
-      const socket = new WebSocket(
-        `${process.env.NEXT_PUBLIC_WS_URL}/dashboard/ws/${userId}`
-      )
-      socket.onmessage = event => {
-        const data = JSON.parse(event?.data)
-        setDashboardData(prevData => ({
-          ...prevData,
-          total_earnings: data?.total_earnings
-        }))
-      }
-      socket.onclose = () => {
-        console.log('Websocket connection closed!')
-      }
-      return () => socket.close()
-    }
+    const intervalId = setInterval(() => {
+      fetchDashboardData()
+    }, 10000)
+
+    return () => clearInterval(intervalId)
+    // if (userId) {
+    //   const socket = new WebSocket(
+    //     `${process.env.NEXT_PUBLIC_WS_URL}/dashboard/ws/${userId}`
+    //   )
+    //   socket.onmessage = event => {
+    //     const data = JSON.parse(event?.data)
+    //     setDashboardData(prevData => ({
+    //       ...prevData,
+    //       total_earnings: data?.total_earnings
+    //     }))
+    //   }
+    //   socket.onclose = () => {
+    //     console.log('Websocket connection closed!')
+    //   }
+    //   return () => socket.close()
+    // }
   }, [])
 
   const total_earnings = dashboardData.total_earnings
