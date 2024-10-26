@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import axios from 'axios'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -25,73 +26,106 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination'
 import DashboardLayout from '@/components/layouts/DashboardLayout'
 
-// Mock data for payments
-const mockPayments = [
-  {
-    id: 1,
-    amount: 100,
-    currency: 'USD',
-    status: 'Completed',
-    date: '2023-05-01'
-  },
-  { id: 2, amount: 75, currency: 'EUR', status: 'Pending', date: '2023-05-02' },
-  { id: 3, amount: 50, currency: 'GBP', status: 'Failed', date: '2023-05-03' }
-  // Add more mock data as needed
-]
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/payments/transactions`
 
-export default function PaymentsDashboard() {
-  const [payments, setPayments] = useState(mockPayments)
-  const [filteredPayments, setFilteredPayments] = useState(payments)
+interface Transaction {
+  id: number
+  payment_method: string
+  payment_link_id: number
+  transaction_id: string
+  status: string
+  created_at: string
+  updated_at: string
+}
+
+export default function TransactionsDashboard() {
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [dateFilter, setDateFilter] = useState('')
   const [currencyFilter, setCurrencyFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+
+  const fetchTransactions = async () => {
+    setLoading(true)
+    setError(null)
+    try {
+      const token = localStorage.getItem('token')
+      const response = await axios.get(API_URL, {
+        params: {
+          date: dateFilter || undefined,
+          currency: currencyFilter || undefined,
+          status: statusFilter || undefined,
+          page: currentPage,
+          per_page: 10
+        },
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+      setTransactions(response.data.transactions)
+      setTotalPages(response.data.total_pages)
+    } catch (error) {
+      console.error('Error fetching transactions:', error)
+      setError('Failed to fetch transactions. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    // Simulating real-time updates
-    const interval = setInterval(() => {
-      const randomPayment =
-        mockPayments[Math.floor(Math.random() * mockPayments.length)]
-      const updatedPayment = {
-        ...randomPayment,
-        status: ['Completed', 'Pending', 'Failed'][
-          Math.floor(Math.random() * 3)
-        ]
-      }
-      setPayments(prevPayments =>
-        prevPayments.map(p => (p.id === updatedPayment.id ? updatedPayment : p))
-      )
-    }, 5000)
+    fetchTransactions()
+  }, [dateFilter, currencyFilter, statusFilter, currentPage])
 
-    return () => clearInterval(interval)
-  }, [])
+  const handleClearFilters = () => {
+    setDateFilter('')
+    setCurrencyFilter('')
+    setStatusFilter('')
+    setCurrentPage(1)
+  }
 
-  useEffect(() => {
-    let filtered = payments
-    if (dateFilter) {
-      filtered = filtered.filter(p => p.date === dateFilter)
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString()
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'success':
+        return 'bg-green-100 text-green-800'
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'failed':
+        return 'bg-red-100 text-red-800'
+      default:
+        return 'bg-gray-100 text-gray-800'
     }
-    if (currencyFilter) {
-      filtered = filtered.filter(p => p.currency === currencyFilter)
-    }
-    if (statusFilter) {
-      filtered = filtered.filter(p => p.status === statusFilter)
-    }
-    setFilteredPayments(filtered)
-  }, [payments, dateFilter, currencyFilter, statusFilter])
+  }
 
   return (
     <DashboardLayout>
       <Card className='w-full'>
         <CardHeader>
           <CardTitle className='text-2xl font-bold text-purple-700'>
-            Payments Dashboard
+            Transactions Dashboard
           </CardTitle>
-          <CardDescription>Track and filter your payments</CardDescription>
+          <CardDescription>View and filter your transactions</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className='mb-4 flex space-x-4'>
+          <div className='mb-4 flex flex-wrap gap-4'>
             <Input
               type='date'
               placeholder='Filter by date'
@@ -104,7 +138,7 @@ export default function PaymentsDashboard() {
                 <SelectValue placeholder='Filter by currency' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='All'>All Currencies</SelectItem>
+                {/* <SelectItem value='ALL'>All Currencies</SelectItem> */}
                 <SelectItem value='USD'>USD</SelectItem>
                 <SelectItem value='EUR'>EUR</SelectItem>
                 <SelectItem value='GBP'>GBP</SelectItem>
@@ -115,57 +149,88 @@ export default function PaymentsDashboard() {
                 <SelectValue placeholder='Filter by status' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='All'>All Statuses</SelectItem>
-                <SelectItem value='Completed'>Completed</SelectItem>
-                <SelectItem value='Pending'>Pending</SelectItem>
-                <SelectItem value='Failed'>Failed</SelectItem>
+                {/* <SelectItem value='All'>All Statuses</SelectItem> */}
+                <SelectItem value='success'>Success</SelectItem>
+                <SelectItem value='pending'>Pending</SelectItem>
+                <SelectItem value='failed'>Failed</SelectItem>
               </SelectContent>
             </Select>
             <Button
-              onClick={() => {
-                setDateFilter('')
-                setCurrencyFilter('')
-                setStatusFilter('')
-              }}
-              className='bg-gray-600 text-white hover:bg-gray-700'
+              onClick={handleClearFilters}
+              variant='outline'
+              className='ml-auto'
             >
               Clear Filters
             </Button>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Currency</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Date</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredPayments.map(payment => (
-                <TableRow key={payment.id}>
-                  <TableCell>{payment.id}</TableCell>
-                  <TableCell>{payment.amount}</TableCell>
-                  <TableCell>{payment.currency}</TableCell>
-                  <TableCell>
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                        payment.status === 'Completed'
-                          ? 'bg-green-200 text-green-800'
-                          : payment.status === 'Pending'
-                            ? 'bg-yellow-200 text-yellow-800'
-                            : 'bg-red-200 text-red-800'
-                      }`}
-                    >
-                      {payment.status}
-                    </span>
-                  </TableCell>
-                  <TableCell>{payment.date}</TableCell>
+
+          {loading ? (
+            <div className='py-4 text-center'>Loading transactions...</div>
+          ) : error ? (
+            <div className='py-4 text-center text-red-600'>{error}</div>
+          ) : transactions.length === 0 ? (
+            <div className='py-4 text-center'>No transactions found.</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Transaction ID</TableHead>
+                  <TableHead>Payment Method</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead>Updated At</TableHead>
                 </TableRow>
+              </TableHeader>
+              <TableBody>
+                {transactions.map(transaction => (
+                  <TableRow key={transaction.id}>
+                    <TableCell>{transaction.id}</TableCell>
+                    <TableCell>{transaction.transaction_id}</TableCell>
+                    <TableCell className='capitalize'>
+                      {transaction.payment_method?.replace('_', ' ')}
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(transaction.status)}>
+                        {transaction.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(transaction.created_at)}</TableCell>
+                    <TableCell>{formatDate(transaction.updated_at)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          <Pagination className='mt-4'>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  aria-disabled={currentPage === 1}
+                />
+              </PaginationItem>
+              {[...Array(totalPages)].map((_, i) => (
+                <PaginationItem key={i}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(i + 1)}
+                    isActive={currentPage === i + 1}
+                  >
+                    {i + 1}
+                  </PaginationLink>
+                </PaginationItem>
               ))}
-            </TableBody>
-          </Table>
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() =>
+                    setCurrentPage(prev => Math.min(prev + 1, totalPages))
+                  }
+                  aria-disabled={currentPage === totalPages}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </CardContent>
       </Card>
     </DashboardLayout>
